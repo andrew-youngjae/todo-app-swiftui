@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-    
-    @State var todoList: [ToDo] = [
+    @Environment(\.modelContext) private var modelContext
+    @Query var todoList: [ToDo] = [
         ToDo(title: "친구 만나기"),
         ToDo(title: "과제 제출하기"),
         ToDo(title: "푹 쉬기"),
@@ -18,14 +19,15 @@ struct ContentView: View {
     func addToDo() {
         withAnimation {
             let newToDo = ToDo(title: "새로운 할일")
-            todoList.append(newToDo)
+            modelContext.insert(newToDo)
         }
     }
     
     func deleleToDo(indexSet: IndexSet) {
         withAnimation {
             for index in indexSet {
-                todoList.remove(at: index)
+                let targetToDo = todoList[index]
+                modelContext.delete(targetToDo)
             }
         }
     }
@@ -42,8 +44,10 @@ struct ContentView: View {
                             todo.isCompleted.toggle()
                         }
                         NavigationLink {
-                            Text("다음 화면입니다.")
+                            // 다음 화면의 View를 정의하는 부분
+                            ToDoDetailView(todo: todo)
                         } label: {
+                            // 현재 화면에서 버튼이 어떻게 보이는지 정의하는 부분
                             Text(todo.title)
                                 .strikethrough(todo.isCompleted, color: Color.gray)
                                 .foregroundStyle(todo.isCompleted ? Color.gray : Color.primary) // .primary : dark mode <--> light mode 전환시 자동으로 색변환하도록 함
